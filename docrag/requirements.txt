@@ -1,0 +1,11 @@
+# Dependencies for the docrag module only, kept separate from the audio code.
+# Install with: pip install -r docrag/requirements.txt
+
+# Reads PDF files. Pure Python, no system libraries needed.
+pypdf==5.1.0
+
+# Google Gemini SDK: free tier embeddings and chat model.
+google-genai==1.20.0
+
+# Fast vector math for the cosine similarity search.
+numpy==2.1.3

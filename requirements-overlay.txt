@@ -1,0 +1,11 @@
+# Dependencies for the floating overlay front end (meeting/overlay.py).
+# Install with: pip install -r requirements-overlay.txt
+
+# The GUI toolkit. Keeps the front end in Python, same process as the assistant.
+PyQt6>=6.6
+
+# Global (system wide) hotkeys, so the overlay responds even when not focused.
+pynput>=1.7
+
+# Bridge to the native macOS window, used to set the screen capture flag.
+pyobjc-framework-Cocoa>=10.0

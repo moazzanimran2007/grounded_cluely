@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "grounded-cluely",
+      "runtimeExecutable": "/Users/moazzanimran/Grounded cluely/.venv/bin/python",
+      "runtimeArgs": ["/Users/moazzanimran/Grounded cluely/server.py"],
+      "port": 8000
+    }
+  ]
+}

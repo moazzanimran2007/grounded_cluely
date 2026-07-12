@@ -1,0 +1,9 @@
+# Dependencies for the web interface (server.py). Install with:
+#   pip install -r requirements-web.txt
+
+# The web framework and the server that runs it.
+fastapi==0.115.5
+uvicorn==0.32.1
+
+# Needed by FastAPI to accept uploaded files in a form.
+python-multipart==0.0.17

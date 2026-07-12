@@ -1,0 +1,38 @@
+Grounded Cluely: Project Overview
+
+Grounded Cluely is a desktop meeting assistant. It listens to a live meeting,
+answers questions the user types to it, and stays out of any shared screen so
+it does not appear when the user shares their display.
+
+The assistant has three capabilities. The first is a meeting listener that
+captures audio from the computer and transcribes it live into a running
+transcript. The second is document context, where the user uploads files and
+the assistant retrieves relevant passages to ground its answers. The third is
+web search, used only when the transcript and the documents cannot answer a
+question.
+
+Task 1 is the meeting listener. It captures microphone audio using the
+sounddevice library and streams it to Deepgram for live transcription. The
+audio is captured as mono at a sample rate of 16000 hertz, encoded as 16 bit
+PCM. The transcript is printed to the terminal in near real time, with interim
+results refining in place and final results committed to their own line.
+
+Task 2 is document context through retrieval, also called RAG. A document is
+extracted to text, split into overlapping chunks of roughly 250 words, and
+embedded into vectors. Each chunk is around 250 words with a 40 word overlap so
+that an idea is not cut across a boundary. The vectors are stored in a small
+local JSON file rather than a hosted vector database, which keeps the early
+version cheap and easy to inspect. Embeddings come from the Google
+gemini-embedding-001 model, and answers come from the gemini-2.5-flash model,
+both on a free tier.
+
+The retrieval step embeds the question and compares it against the stored
+chunks using cosine similarity, returning the four closest chunks. The answer
+step feeds those chunks and the question to the model and instructs it to answer
+only from the provided context, or to say it could not find the answer when the
+context does not contain it.
+
+The whole project has a budget of about 60 hours over the summer, at roughly two
+hours a day. The guiding constraints are to keep costs low by using free tiers,
+to write code the author can understand and explain, and to avoid em dashes in
+all prose and comments.

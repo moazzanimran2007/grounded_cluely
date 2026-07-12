@@ -1,0 +1,17 @@
+# Never commit your real API key.
+.env
+
+# macOS folder metadata.
+.DS_Store
+
+# Python virtual environment and caches.
+.venv/
+__pycache__/
+*.pyc
+
+# Generated at runtime by the interface and the docrag module.
+uploads/
+docrag/index/
+
+# Saved meeting summaries and transcripts, which may be private.
+meetings/

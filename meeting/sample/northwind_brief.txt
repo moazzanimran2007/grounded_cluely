@@ -1,0 +1,8 @@
+Northwind Analytics Project Brief
+
+The product is named Northwind Analytics.
+The planned launch date is March 14, 2026.
+The subscription price is 49 dollars per month.
+The system stores its data in a PostgreSQL database.
+The primary contact at the vendor is Dana Reyes.
+The product ships as a desktop application for macOS and Windows.

@@ -1,0 +1,7 @@
+What are the three capabilities of the assistant?
+Which service does Task 1 use for live transcription?
+What sample rate is the audio captured at?
+How many words is each chunk, and how much overlap?
+Which embedding model does Task 2 use?
+How many hours is the total project budget?
+What payment network does the billing system use?

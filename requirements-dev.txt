@@ -1,0 +1,4 @@
+# Test-only dependencies. Install with: pip install -r requirements-dev.txt
+# The async tests drive the event loop directly with asyncio.run, so we do not
+# need any extra asyncio plugin here, just pytest itself.
+pytest==8.3.3

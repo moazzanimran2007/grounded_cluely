@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grounded Cluely</title>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #171c24; --border: #2a313c; --text: #e6e9ef;
+      --muted: #8b93a1; --accent: #4f9dff; --me: #4f9dff; --them: #c8a93f;
+      --good: #3fb950; --bad: #f85149;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+           font-family: -apple-system, system-ui, sans-serif; line-height: 1.5; }
+    header { padding: 14px 22px; border-bottom: 1px solid var(--border);
+             display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+    .keys { display: flex; gap: 12px; font-size: 12px; color: var(--muted); }
+    .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; background: var(--muted); }
+    .dot.on { background: var(--good); } .dot.off { background: var(--bad); }
+    .spacer { flex: 1; }
+    button { background: var(--accent); color: #061018; border: 0; border-radius: 7px;
+             padding: 8px 15px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    button.secondary { background: #232b35; color: var(--text); border: 1px solid var(--border); }
+    button:disabled { opacity: 0.45; cursor: default; }
+    #banner { display:none; padding:10px 22px; background:#3a1d1d; color:#ffb4ac;
+              border-bottom:1px solid var(--bad); font-size:14px; }
+    .controls { padding: 12px 22px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+                border-bottom: 1px solid var(--border); }
+    .controls .status { color: var(--muted); font-size: 13px; }
+    main { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 18px; max-width: 1200px; margin: 0 auto; }
+    @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; }
+    .card h2 { font-size: 14px; margin: 0 0 10px; }
+    .transcript { background: #0b0f14; border: 1px solid var(--border); border-radius: 8px;
+                  padding: 12px; height: 420px; overflow-y: auto; font-size: 14px; }
+    .line { margin: 0 0 6px; }
+    .line .who { font-weight: 700; }
+    .line.me .who { color: var(--me); } .line.them .who { color: var(--them); }
+    .line .clock { color: var(--muted); font-size: 11px; margin-right: 6px; }
+    .qa-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    input[type=text] { flex: 1; background: #0b0f14; border: 1px solid var(--border); color: var(--text);
+                       border-radius: 7px; padding: 9px 11px; font-size: 14px; }
+    .answers { background: #0b0f14; border: 1px solid var(--border); border-radius: 8px;
+               padding: 12px; flex: 1; min-height: 200px; overflow-y: auto; font-size: 14px; }
+    .answers .q { color: var(--accent); font-weight: 600; margin-top: 8px; }
+    .answers .a { margin: 4px 0; }
+    .answers .src { color: var(--muted); font-size: 12px; margin-left: 8px; }
+    .answers .err { color: var(--bad); }
+    .summary { max-width: 1200px; margin: 0 auto 22px; padding: 0 18px; }
+    .summary pre { background: #0b0f14; border: 1px solid var(--border); border-radius: 8px;
+                   padding: 14px; white-space: pre-wrap; font-size: 13px; color: var(--text); }
+    .pill { color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Grounded Cluely</h1>
+    <div class="keys">
+      <span><span id="dot-dg" class="dot"></span>Deepgram</span>
+      <span><span id="dot-gm" class="dot"></span>Gemini</span>
+    </div>
+    <div class="spacer"></div>
+    <span class="pill">a local meeting assistant</span>
+  </header>
+
+  <div id="banner"></div>
+
+  <div class="controls">
+    <button id="sampleBtn" class="secondary">Load sample doc</button>
+    <input type="file" id="fileInput" accept=".txt,.md,.pdf" style="display:none" />
+    <button id="uploadBtn" class="secondary">Upload doc</button>
+    <span id="docStatus" class="status">No document loaded (optional).</span>
+    <div class="spacer"></div>
+    <button id="startBtn">Start meeting</button>
+    <button id="endBtn" class="secondary" disabled>End meeting</button>
+  </div>
+  <div class="controls" style="border-bottom:0; padding-top:0;">
+    <span id="meetingStatus" class="status"></span>
+  </div>
+
+  <main>
+    <section class="card">
+      <h2>Live transcript</h2>
+      <div id="transcript" class="transcript">
+        <div class="pill">Start a meeting to see the transcript. [ME] is you, [THEM] is system audio.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Ask the assistant</h2>
+      <div class="qa-row">
+        <input type="text" id="question" placeholder="Ask about your doc or the meeting..." disabled />
+        <button id="askBtn" disabled>Ask</button>
+      </div>
+      <div id="answers" class="answers"></div>
+    </section>
+  </main>
+
+  <div id="summaryWrap" class="summary" style="display:none">
+    <div class="card">
+      <h2>Meeting summary</h2>
+      <div id="summaryPath" class="pill"></div>
+      <pre id="summaryText"></pre>
+    </div>
+  </div>
+
+  <script>
+    const banner = document.getElementById('banner');
+    const showBanner = (m) => { banner.textContent = m; banner.style.display = 'block'; };
+
+    fetch('/api/status').then(r => r.json()).then(s => {
+      document.getElementById('dot-dg').className = 'dot ' + (s.deepgram ? 'on' : 'off');
+      document.getElementById('dot-gm').className = 'dot ' + (s.gemini ? 'on' : 'off');
+    }).catch(() => showBanner('Cannot reach the server. Open http://127.0.0.1:8000 in a real browser.'));
+
+    let activeDoc = null;
+    let ws = null;
+    let meetingOn = false;
+
+    const sampleBtn = document.getElementById('sampleBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const docStatus = document.getElementById('docStatus');
+    const startBtn = document.getElementById('startBtn');
+    const endBtn = document.getElementById('endBtn');
+    const meetingStatus = document.getElementById('meetingStatus');
+    const transcript = document.getElementById('transcript');
+    const question = document.getElementById('question');
+    const askBtn = document.getElementById('askBtn');
+    const answers = document.getElementById('answers');
+
+    // ----- document selection (optional) -----
+    sampleBtn.onclick = async () => {
+      docStatus.textContent = 'Indexing sample doc...';
+      try {
+        const d = await (await fetch('/api/use-sample', { method: 'POST' })).json();
+        activeDoc = d.file;
+        docStatus.innerHTML = '<span style="color:var(--good)">Doc: ' + d.name + ' (' + d.chunks + ' chunks)</span>';
+      } catch { showBanner('Cannot reach the server.'); }
+    };
+    uploadBtn.onclick = () => fileInput.click();
+    fileInput.onchange = async () => {
+      if (!fileInput.files.length) return;
+      docStatus.textContent = 'Uploading ' + fileInput.files[0].name + '...';
+      const form = new FormData(); form.append('file', fileInput.files[0]);
+      try {
+        const d = await (await fetch('/api/upload', { method: 'POST', body: form })).json();
+        if (d.error) { docStatus.innerHTML = '<span class="err">' + d.error + '</span>'; return; }
+        activeDoc = d.file;
+        docStatus.innerHTML = '<span style="color:var(--good)">Doc: ' + d.name + ' (' + d.chunks + ' chunks)</span>';
+      } catch { showBanner('Cannot reach the server.'); }
+    };
+
+    // ----- meeting lifecycle -----
+    startBtn.onclick = async () => {
+      startBtn.disabled = true;
+      meetingStatus.textContent = 'Starting capture...';
+      document.getElementById('summaryWrap').style.display = 'none';
+      transcript.innerHTML = '';
+      try {
+        const s = await (await fetch('/api/meeting/start', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ doc: activeDoc })
+        })).json();
+        meetingOn = true;
+        endBtn.disabled = false;
+        question.disabled = false; askBtn.disabled = false;
+        const doc = s.doc ? (', doc: ' + s.doc) : '';
+        meetingStatus.innerHTML = 'Capturing. mic alive: ' + s.mic_alive +
+          ', system alive: ' + s.system_alive + ' at ' + s.system_rate + ' Hz' + doc + '.';
+        openWs();
+      } catch (e) {
+        meetingStatus.innerHTML = '<span style="color:var(--bad)">Could not start: ' + e + '</span>';
+        startBtn.disabled = false;
+      }
+    };
+
+    function openWs() {
+      ws = new WebSocket(`ws://${location.host}/ws/meeting`);
+      ws.onmessage = (e) => {
+        const d = JSON.parse(e.data);
+        if (d.type === 'line') addLine(d.label, d.text, d.clock);
+        else if (d.type === 'ended') { /* meeting ended on server */ }
+      };
+    }
+
+    function addLine(label, text, clock) {
+      const who = label === 'ME' ? 'ME' : 'THEM';
+      const div = document.createElement('div');
+      div.className = 'line ' + (label === 'ME' ? 'me' : 'them');
+      div.innerHTML = '<span class="clock">' + (clock || '') + '</span>' +
+        '<span class="who">[' + who + ']</span> ' + escapeHtml(text);
+      transcript.appendChild(div);
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    endBtn.onclick = async () => {
+      endBtn.disabled = true;
+      meetingStatus.textContent = 'Ending and writing summary...';
+      try {
+        const r = await (await fetch('/api/meeting/end', { method: 'POST' })).json();
+        meetingOn = false;
+        // Keep the ask box usable after the meeting ends, so you can keep
+        // querying the final transcript and your documents.
+        question.disabled = false; askBtn.disabled = false;
+        if (ws) { ws.close(); ws = null; }
+        startBtn.disabled = false;
+        if (r.error) { meetingStatus.innerHTML = '<span style="color:var(--bad)">' + r.error + '</span>'; return; }
+        meetingStatus.textContent = 'Meeting ended.';
+        document.getElementById('summaryWrap').style.display = 'block';
+        document.getElementById('summaryPath').textContent = 'Saved to: ' + r.path;
+        document.getElementById('summaryText').textContent = r.content;
+      } catch (e) {
+        meetingStatus.innerHTML = '<span style="color:var(--bad)">Could not end: ' + e + '</span>';
+      }
+    };
+
+    // ----- ask -----
+    async function ask() {
+      const q = question.value.trim();
+      if (!q || askBtn.disabled) return;   // ignore empty, or a question already in flight
+      question.value = '';
+      askBtn.disabled = true;              // block a double submit while this one runs
+      const qEl = document.createElement('div'); qEl.className = 'q'; qEl.textContent = 'You: ' + q;
+      answers.appendChild(qEl);
+      const thinking = document.createElement('div'); thinking.className = 'a'; thinking.textContent = 'Thinking...';
+      answers.appendChild(thinking); answers.scrollTop = answers.scrollHeight;
+      try {
+        const d = await (await fetch('/api/meeting/ask', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q })
+        })).json();
+        if (d.error) { thinking.className = 'a err'; thinking.textContent = d.error; }
+        else {
+          thinking.className = 'a'; thinking.textContent = d.answer;
+          (d.sources || []).forEach(s => {
+            const sEl = document.createElement('div'); sEl.className = 'src'; sEl.textContent = s;
+            answers.appendChild(sEl);
+          });
+        }
+      } catch (e) {
+        thinking.className = 'a err'; thinking.textContent = 'Could not answer: ' + e;
+      }
+      // Ready for the next question: re-enable the button and put the cursor back.
+      askBtn.disabled = false;
+      question.focus();
+      answers.scrollTop = answers.scrollHeight;
+    }
+    askBtn.onclick = ask;
+    question.onkeydown = (e) => { if (e.key === 'Enter') ask(); };
+
+    function escapeHtml(s) {
+      const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+    }
+  </script>
+</body>
+</html>

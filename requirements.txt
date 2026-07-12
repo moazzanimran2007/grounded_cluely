@@ -1,0 +1,8 @@
+# Audio capture from your mic (or a virtual device later for system audio).
+sounddevice==0.5.1
+
+# The websocket client we use to stream audio to Deepgram and read transcripts back.
+websockets==13.1
+
+# Loads your API key from a .env file so it never gets hardcoded in the script.
+python-dotenv==1.0.1
