@@ -1,10 +1,82 @@
 # Grounded Cluely
 
-An invisible meeting assistant. It listens to your live calls, grounds answers in
-your documents, and can search the web, all without showing up when you share your
-screen.
+A local meeting assistant for macOS. It listens to your live calls, both your voice
+and the other people's, keeps a labeled running transcript, and answers questions
+you type, grounded in your uploaded documents, the meeting so far, and the web.
+Everything runs on your own machine.
 
-This repo is built in stages. Right now only Task 1 exists.
+## What it does
+
+- **Listens to both sides.** Your microphone is captured as `[ME]`, the other
+  participants' audio is captured straight off your Mac's system output as
+  `[THEM]`, using a native Core Audio tap with no virtual audio driver to install.
+- **Grounded answers.** Ask a question and it retrieves from your documents and the
+  live transcript, tells you which source each answer came from, and falls back to
+  a web search only when neither has the answer.
+- **Meeting summary.** When you end a meeting it saves a timestamped summary
+  (recap, decisions, action items) plus the full transcript to the `meetings/`
+  folder.
+- **Local browser UI.** The whole thing runs as a page at `127.0.0.1:8000`, served
+  by a small local server. Nothing is hosted online.
+
+## Requirements
+
+- **macOS 14.4 or newer** (the Core Audio tap needs it). Developed on macOS 15.
+- **Python 3.11+** (developed on 3.13).
+- **Xcode or the Command Line Tools**, to compile the small Swift capture helper.
+- A free **Deepgram** key (live transcription) and a free **Google Gemini** key
+  (embeddings, answers, summaries, web search).
+
+## Setup
+
+```bash
+git clone https://github.com/YOUR_USERNAME/grounded-cluely.git
+cd grounded-cluely
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -r requirements-web.txt -r docrag/requirements.txt
+
+sh native/build.sh          # compiles native/systemaudiotap (the system audio helper)
+
+cp .env.example .env         # then open .env and paste your two API keys
+```
+
+(`requirements-dev.txt` for the tests and `requirements-overlay.txt` for the
+optional PyQt overlay are not needed to run the app.)
+
+## Run
+
+```bash
+source .venv/bin/activate
+python server.py
+```
+
+Open **http://127.0.0.1:8000** in Safari or Chrome. Then:
+
+1. Optionally load or upload a document to ground answers in.
+2. Click **Start meeting**. The first run, macOS asks for Microphone permission,
+   and the system audio helper needs the system audio recording permission granted
+   to your terminal (System Settings, Privacy and Security).
+3. Talk, and let the call play. **Use headphones** so your mic does not pick up the
+   other side, which keeps the `[ME]` and `[THEM]` labels clean.
+4. Ask questions in the panel. Each answer shows its source.
+5. Click **End meeting** to stop and save the summary. Its file path is shown.
+
+## Honest limitations
+
+- **Screen capture hiding is best effort.** On macOS 15+ ScreenCaptureKit ignores
+  the exclusion flag, so the window may still appear (or as a black box) under
+  modern screen recording and apps like Zoom.
+- **Free tier hiccups.** Gemini's free tier occasionally returns a transient
+  "high demand" error. Just ask again.
+- **Clean labels need headphones.** On speakers, the mic hears the call and
+  mislabels it as your voice.
+
+## How it was built (reference)
+
+The sections below document each capability in the order it was built, with its own
+verification steps. They are reference, not required reading to run the app.
 
 ## Task 1: listen and transcribe
 
