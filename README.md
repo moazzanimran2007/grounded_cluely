@@ -3,7 +3,8 @@
 A local meeting assistant for macOS. It listens to your live calls, both your voice
 and the other people's, keeps a labeled running transcript, and answers questions
 you type, grounded in your uploaded documents, the meeting so far, and the web.
-Everything runs on your own machine.
+The app runs on your own machine; live transcription uses Deepgram and answers use
+Google Gemini.
 
 ## What it does
 
@@ -19,6 +20,13 @@ Everything runs on your own machine.
 - **Local browser UI.** The whole thing runs as a page at `127.0.0.1:8000`, served
   by a small local server. Nothing is hosted online.
 
+## Tech stack
+
+Python with asyncio and FastAPI for the pipeline and local server, a small Swift helper using
+a Core Audio process tap for system audio, Deepgram for live speech-to-text, Google
+Gemini for embeddings, answers, summaries and web search, NumPy for vector search,
+and pypdf for reading PDFs. Tested with pytest.
+
 ## Requirements
 
 - **macOS 14.4 or newer** (the Core Audio tap needs it). Developed on macOS 15.
@@ -30,8 +38,8 @@ Everything runs on your own machine.
 ## Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/grounded-cluely.git
-cd grounded-cluely
+git clone https://github.com/moazzanimran2007/grounded_cluely.git
+cd grounded_cluely
 
 python3 -m venv .venv
 source .venv/bin/activate
@@ -271,10 +279,4 @@ whether each API key is detected.
 
 ## What is next
 
-- **System audio**, not just your mic. To transcribe what other people say on a
-  call, macOS needs a virtual audio device like BlackHole to route call audio into
-  `sounddevice`. That is the next step for the meeting listener.
-- **Merge the two**: feed the live transcript into the docrag retrieve-and-answer
-  step so questions can be grounded in the meeting plus your documents at once.
-- **Web search** (Task 3) as the fallback source when neither the transcript nor
-  the documents can answer.
+The steps this section used to list (system audio through the Core Audio tap, answers grounded in the meeting plus your documents, and the web search fallback) are now built and joined in the web app described at the top of this README.
